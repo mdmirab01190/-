@@ -195,7 +195,7 @@ function vHome() {
     <button data-a="new" data-kind="recharge"><span>⚡</span>রিচার্জ</button>
     <button data-a="new" data-kind="expense"><span>🧾</span>খরচ</button>
   </div>
-  ${needBackup ? `<div class="note">অনেক দিন ব্যাকআপ নেওয়া হয়নি। ফোন নষ্ট হলে বা ব্রাউজারের ডেটা মুছে গেলে হিসাব হারিয়ে যাবে — <b>আরও → ব্যাকআপ</b> থেকে ফাইল সেভ করে রাখুন।</div>` : ''}
+  ${needBackup ? `<div class="note">অনেক দিন ব্যাকআপ নেওয়া হয়নি। ফোন নষ্ট হলে বা ব্রাউজারের ডেটা মুছে গেলে হিসাব হারিয়ে যাবে — এখনই গুগল ড্রাইভে ব্যাকআপ নিন।<button class="btn" style="margin-top:10px" data-a="gdrive">☁️ গুগল ড্রাইভে ব্যাকআপ</button></div>` : ''}
   <div class="sec"><h2>ক্যাশ</h2><button data-a="go" data-v="recon">হিসাব মিলান</button></div>
   <div class="grid">${by('cash').map(a => accCard(a, bal[a.id], true)).join('')}</div>
   <div class="sec"><h2>মোবাইল ব্যাংকিং</h2></div>
@@ -269,6 +269,7 @@ function vCustomer() {
 
 function vMore() {
   const item = (a, ic, t, s, extra = '') => `<button data-a="${a}" ${extra}><span>${ic}</span><div>${t}<small>${s}</small></div></button>`;
+  const lastB = db.settings.lastBackup;
   return `${head('আরও')}
   <div class="card menu">
     ${item('go', '📊', 'রিপোর্ট', 'দিন, সপ্তাহ ও মাসের লাভ-খরচের হিসাব', 'data-v="report"')}
@@ -283,8 +284,9 @@ function vMore() {
   </div>
   <div class="sec"><h2>ডেটা</h2></div>
   <div class="card menu">
-    ${item('backup', '💾', 'ব্যাকআপ নিন', 'সব হিসাব একটি ফাইলে সেভ করুন')}
-    ${item('restore', '📂', 'ব্যাকআপ থেকে ফিরিয়ে আনুন', 'আগের সেভ করা ফাইল থেকে')}
+    ${item('gdrive', '☁️', 'গুগল ড্রাইভে ব্যাকআপ', lastB ? 'শেষ ব্যাকআপ: ' + fdate(ymd(new Date(lastB))) : 'এখনো ব্যাকআপ নেওয়া হয়নি')}
+    ${item('backup', '💾', 'ফোনে ব্যাকআপ ফাইল সেভ', 'সব হিসাব একটি ফাইলে ডাউনলোড করুন')}
+    ${item('restore', '📂', 'ব্যাকআপ থেকে ফিরিয়ে আনুন', 'গুগল ড্রাইভ বা ফোনের ফাইল থেকে')}
     ${item('csv', '📑', 'এক্সেল ফাইল (CSV)', 'সব লেনদেন এক্সেলে খোলার জন্য')}
     ${item('reset', '🗑️', 'সব ডেটা মুছে ফেলুন', 'নতুন করে শুরু করতে')}
   </div>
@@ -606,6 +608,19 @@ const A = {
     db.settings.lastBackup = Date.now(); save();
     download('dokan-khata-backup-' + today() + '.json', JSON.stringify(db), 'application/json');
     render(); toast('ব্যাকআপ ফাইল ডাউনলোড হয়েছে — নিরাপদ জায়গায় রাখুন');
+  },
+  gdrive: async () => {
+    // ফোনের শেয়ার মেনু দিয়ে ফাইলটি গুগল ড্রাইভে পাঠানো হয় (.txt না হলে ক্রোম শেয়ার করতে দেয় না)
+    const file = new File([JSON.stringify(db)], 'dokan-khata-backup-' + today() + '.txt', {type: 'text/plain'});
+    if (!(navigator.canShare && navigator.canShare({files: [file]}))) {
+      alert('এই ব্রাউজার থেকে সরাসরি গুগল ড্রাইভে পাঠানো যাচ্ছে না। ব্যাকআপ ফাইলটি ফোনে ডাউনলোড হবে — সেটি গুগল ড্রাইভ অ্যাপে আপলোড করে রাখুন।');
+      return A.backup();
+    }
+    try {
+      await navigator.share({files: [file], title: 'দোকান খাতা ব্যাকআপ'});
+      db.settings.lastBackup = Date.now(); save(); render();
+      toast('✓ ব্যাকআপ পাঠানো হয়েছে');
+    } catch (e) { if (e.name !== 'AbortError') toast('ব্যাকআপ পাঠানো যায়নি, আবার চেষ্টা করুন'); }
   },
   restore: () => $('#file').click(),
   csv: () => {
