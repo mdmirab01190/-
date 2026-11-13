@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>দোকান খাতা</title>
+<meta name="description" content="বিকাশ, নগদ, রকেট, উপায় ও রিচার্জ দোকানের ডিজিটাল হিসাবের খাতা">
+<meta name="theme-color" content="#0f766e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app"></main>
+
+<nav id="nav">
+  <button data-a="go" data-v="home"><span class="ni">🏠</span>হোম</button>
+  <button data-a="go" data-v="list"><span class="ni">📒</span>খাতা</button>
+  <button class="fab" data-a="new" aria-label="নতুন এন্ট্রি">+</button>
+  <button data-a="go" data-v="due"><span class="ni">🤝</span>বাকি</button>
+  <button data-a="go" data-v="more"><span class="ni">☰</span>আরও</button>
+</nav>
+
+<div id="sheetWrap" hidden>
+  <div class="backdrop" data-a="closeSheet"></div>
+  <section id="sheet" role="dialog" aria-modal="true"></section>
+</div>
+<div id="lock" hidden></div>
+<div id="toast" role="status"></div>
+<input type="file" id="file" accept="application/json,.json" hidden>
+
+<script src="app.js"></script>
+</body>
+</html>
